@@ -60,27 +60,7 @@ const createClothingItem = (req, res) => {
     });
 };
 
-const updateClothingItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } }, { new: true })
-    .orFail()
-    .then((item) => {
-      res.status(201).send({ status: "success", data: item });
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "ValidationError") {
-        return res
-          .status(errorUtils.BadRequestStatus)
-          .send({ status: "fail", message: err.message });
-      }
-      return res
-        .status(errorUtils.InternalSurverError)
-        .send({ status: "fail", message: err.message });
-    });
-};
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.prams;

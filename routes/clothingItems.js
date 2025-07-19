@@ -15,9 +15,7 @@ const {
 router.get("/", getClothingItems);
 router.get("/:itemId", getClothingItem);
 router.post("/", createClothingItem); // post request to /items
-router.put("/:itemId", updateClothingItem);
 router.delete("/:itemId", deleteClothingItem);
-
 router.put("/:itemId/likes", likeItem);
 router.delete("/:itemId/likes", dislikeItem);
 module.exports = router;
