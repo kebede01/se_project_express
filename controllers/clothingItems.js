@@ -114,7 +114,6 @@ module.exports = {
   getClothingItems,
   getClothingItem,
   createClothingItem,
-  updateClothingItem,
   deleteClothingItem,
   likeItem,
   dislikeItem,
