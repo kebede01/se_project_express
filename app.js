@@ -15,8 +15,6 @@ mongoose
   .then(() => console.log("connected to DB"))
   .catch((err) => console.error(err));
 
-// imagine we make a POST request to /items
-
 app.use(express.json());
 
 app.use((req, res, next) => {

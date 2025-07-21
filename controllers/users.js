@@ -10,8 +10,8 @@ const getUsers = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
@@ -26,17 +26,17 @@ const getUser = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(errorUtils.DocumentNotFoundError)
-          .send({ message: err.message });
+          .send({ message: "The requested resource was not found" });
       }
       if (err.name === "CastError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ message: err.message });
+          .send({ message: "Invalid item ID" });
       }
 
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
@@ -51,11 +51,11 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ status: "fail", message: err.message });
+          .send({ message: "Check the values you provided for each field!" });
       }
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ status: "fail", message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 

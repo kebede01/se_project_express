@@ -11,8 +11,8 @@ const getClothingItems = (req, res) => {
       console.error(err);
 
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ status: "fail", message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
@@ -21,23 +21,26 @@ const getClothingItem = (req, res) => {
   ClothingItem.findById(itemId)
     // .orFail()
     .then((item) => {
-      res.status(200).send({ status: "success", data: item });
+      res.status(200).send({ data: item });
     })
     .catch((err) => {
+      console.error(err);
+
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(errorUtils.DocumentNotFoundError)
-          .send({ status: "fail", message: err.message });
+          .send({ message: "The requested resource was not found" });
       }
+
       if (err.name === "CastError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ status: "fail", message: err.message });
+          .send({ message: "Invalid item ID" });
       }
 
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
@@ -52,63 +55,101 @@ const createClothingItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ message: err.message });
+          .send({ message: "Check the values you provided for each field!" });
       }
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ message: err.message });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
-
-
 const deleteClothingItem = (req, res) => {
-  const { itemId } = req.prams;
+  const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then(() => {
-      res.status(204).send({ data: null });
+      res.status(200).send({ data: null });
     })
     .catch((err) => {
       console.error(err);
+
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: "This item doesn't exist" });
+        return res
+          .status(errorUtils.DocumentNotFoundError)
+          .send({ message: "The requested resource was not found" });
       }
+
       if (err.name === "CastError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ message: err.message });
+          .send({ message: "Invalid item ID" });
       }
+
       return res
-        .status(errorUtils.InternalSurverError)
-        .send({ message: "Error occurred" });
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
     });
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
     { new: true }
   )
+    .orFail()
     .then((like) => res.status(200).send({ data: like }))
     .catch((err) => {
       console.error(err);
-    });
 
-const dislikeItem = (req, res) =>
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(errorUtils.DocumentNotFoundError)
+          .send({ message: "The requested resource was not found" });
+      }
+
+      if (err.name === "CastError") {
+        return res
+          .status(errorUtils.BadRequestStatus)
+          .send({ message: "Invalid item ID" });
+      }
+
+      return res
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
+    });
+};
+
+const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } }, // remove _id from the array
     { new: true }
-  ).then(() => {
-    res
-      .status(200)
-      .send({ data: null })
-      .catch((err) => {
-        console.error(err);
-      });
-  });
+  )
+    .orFail()
+    .then(() => {
+      res.status(200).send({ data: null });
+    })
+    .catch((err) => {
+      console.error(err);
+
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(errorUtils.DocumentNotFoundError)
+          .send({ message: "The requested resource was not found" });
+      }
+
+      if (err.name === "CastError") {
+        return res
+          .status(errorUtils.BadRequestStatus)
+          .send({ message: "Invalid item ID" });
+      }
+
+      return res
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
+    });
+};
 
 module.exports = {
   getClothingItems,
