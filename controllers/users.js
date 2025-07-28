@@ -1,6 +1,12 @@
+const jwt = require("jsonwebtoken");
+
+const bcrypt = require("bcryptjs");
+
 const User = require("../models/user");
 
 const errorUtils = require("../utils/errors");
+
+const config = require("../utils/config");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -15,8 +21,10 @@ const getUsers = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
+const getCurrentUser = (req, res) => {
+  // const { userId } = req.params;
+  const userId = req.user._id;
+
   User.findById(userId)
     .orFail()
     .then((user) => {
@@ -41,11 +49,25 @@ const getUser = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
-  User.create({ name, avatar })
-    .then((user) => {
-      res.status(201).send({ data: user });
-    })
+  const { name, avatar, email, password } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) =>
+      User.create({
+        name,
+        avatar,
+        email,
+        password: hash,
+      }).then((user) => {
+        // Convert to plain object and delete password
+        const userObject = user.toObject();
+        delete userObject.password;
+
+        res.status(201).send({
+          data: userObject,
+        });
+      })
+    )
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -53,10 +75,56 @@ const createUser = (req, res) => {
           .status(errorUtils.BadRequestStatus)
           .send({ message: "Check the values you provided for each field!" });
       }
+      if (err.code === 11000) {
+        // Duplicate key error — typically for unique fields like email
+        return res.status(409).json({ message: "Email already exists." });
+      }
+      // Handle other errors
       return res
         .status(errorUtils.InternalServerError)
         .send({ message: "An internal server error occurred" });
     });
 };
 
-module.exports = { getUsers, getUser, createUser };
+const updateProfile = (req, res) => {
+  const userId = req.user._id; // Get user ID from auth middleware
+  const { name, avatar } = req.body; // Only allow these fields to be updated
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    {
+      new: true, // Return the updated document
+      runValidators: true, // Run schema validation on update
+    }
+  )
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      return res.json(user);
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(400).json({ message: "Validation error" });
+      }
+      return res.status(500).json({ message: "Server error" });
+    });
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.status(200).send({
+        token: jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+          expiresIn: "7d",
+        }),
+      });
+    })
+    .catch((err) => {
+      res.status(400).send({ message: err.message });
+    });
+};
+module.exports = { updateProfile, getUsers, getCurrentUser, createUser, login };

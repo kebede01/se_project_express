@@ -23,4 +23,19 @@ module.exports = {
     "no-console": ["warn", { allow: ["error"] }],
      "no-underscore-dangle": "off",
   }
+  // rules: {
+  //   "no-console": ["warn", { allow: ["error"] }],
+  //   "no-underscore-dangle": "off",
+  //   'import/no-extraneous-dependencies': [
+  //     'error',
+  //     {
+  //       devDependencies: [
+  //         '**/*.test.js',
+  //         '**/*.spec.js',
+  //         '**/setupTests.js'
+  //       ]
+  //     }
+  //   ]
+  // }
+
 };

@@ -18,30 +18,32 @@ const getClothingItems = (req, res) => {
 
 const getClothingItem = (req, res) => {
   const { itemId } = req.params;
-  ClothingItem.findById(itemId)
-    // .orFail()
-    .then((item) => {
-      res.status(200).send({ data: item });
-    })
-    .catch((err) => {
-      console.error(err);
+  return (
+    ClothingItem.findById(itemId)
+      // .orFail()
+      .then((item) => {
+        res.status(200).send({ data: item });
+      })
+      .catch((err) => {
+        console.error(err);
 
-      if (err.name === "DocumentNotFoundError") {
+        if (err.name === "DocumentNotFoundError") {
+          return res
+            .status(errorUtils.DocumentNotFoundError)
+            .send({ message: "The requested resource was not found" });
+        }
+
+        if (err.name === "CastError") {
+          return res
+            .status(errorUtils.BadRequestStatus)
+            .send({ message: "Invalid item ID" });
+        }
+
         return res
-          .status(errorUtils.DocumentNotFoundError)
-          .send({ message: "The requested resource was not found" });
-      }
-
-      if (err.name === "CastError") {
-        return res
-          .status(errorUtils.BadRequestStatus)
-          .send({ message: "Invalid item ID" });
-      }
-
-      return res
-        .status(errorUtils.InternalServerError)
-        .send({ message: "An internal server error occurred" });
-    });
+          .status(errorUtils.InternalServerError)
+          .send({ message: "An internal server error occurred" });
+      })
+  );
 };
 
 const createClothingItem = (req, res) => {
@@ -64,11 +66,41 @@ const createClothingItem = (req, res) => {
 };
 
 const deleteClothingItem = (req, res) => {
-  const { itemId } = req.params;
-  ClothingItem.findByIdAndDelete(itemId)
+  const userId = req.user._id; // the currently logged in user's id
+  const { itemId } = req.params; // the id of the item which we are attempting to delete
+  // we should only allow an item to be deleted if the current user's id is equal to the owner property of the item
+  ClothingItem.findById(itemId)
     .orFail()
-    .then(() => {
-      res.status(200).send({ data: null });
+    .then((itemData) => {
+      if (userId.toString() === itemData.owner.toString()) {
+        return ClothingItem.findByIdAndDelete(itemId)
+          .orFail()
+          .then(() => {
+            res.status(200).send({ data: null });
+          })
+          .catch((err) => {
+            console.error(err);
+
+            if (err.name === "DocumentNotFoundError") {
+              return res
+                .status(errorUtils.DocumentNotFoundError)
+                .send({ message: "The requested resource was not found" });
+            }
+
+            if (err.name === "CastError") {
+              return res
+                .status(errorUtils.BadRequestStatus)
+                .send({ message: "Invalid item ID" });
+            }
+
+            return res
+              .status(errorUtils.InternalServerError)
+              .send({ message: "An internal server error occurred" });
+          });
+      }
+      return res
+        .status(403)
+        .send({ message: "The user isn't authorized to delete this item" });
     })
     .catch((err) => {
       console.error(err);
@@ -89,6 +121,7 @@ const deleteClothingItem = (req, res) => {
         .status(errorUtils.InternalServerError)
         .send({ message: "An internal server error occurred" });
     });
+  // look up the clothing item that has itemId => once we get that item, then we can compare the owner property of that item to the userId
 };
 
 const likeItem = (req, res) => {
