@@ -5,7 +5,7 @@ const errorUtils = require("../utils/errors");
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => {
-      res.status(200).send({ data: items });
+      res.status(errorUtils.Successful).send({ data: items });
     })
     .catch((err) => {
       console.error(err);
@@ -22,7 +22,7 @@ const getClothingItem = (req, res) => {
     ClothingItem.findById(itemId)
       // .orFail()
       .then((item) => {
-        res.status(200).send({ data: item });
+        res.status(errorUtils.Successful).send({ data: item });
       })
       .catch((err) => {
         console.error(err);
@@ -50,7 +50,7 @@ const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      res.status(201).send({ data: item });
+      res.status(errorUtils.SuccessfulOperation).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
@@ -76,7 +76,9 @@ const deleteClothingItem = (req, res) => {
         return ClothingItem.findByIdAndDelete(itemId)
           .orFail()
           .then(() => {
-            res.status(200).send({ data: null });
+            res
+              .status(errorUtils.Successful)
+              .send({ data: "Item deleted successfully" });
           })
           .catch((err) => {
             console.error(err);
@@ -99,7 +101,7 @@ const deleteClothingItem = (req, res) => {
           });
       }
       return res
-        .status(403)
+        .status(errorUtils.NotAuthorized)
         .send({ message: "The user isn't authorized to delete this item" });
     })
     .catch((err) => {
@@ -131,7 +133,7 @@ const likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((like) => res.status(200).send({ data: like }))
+    .then((like) => res.status(errorUtils.Successful).send({ data: like }))
     .catch((err) => {
       console.error(err);
 
@@ -160,8 +162,8 @@ const dislikeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then(() => {
-      res.status(200).send({ data: null });
+    .then((item) => {
+      res.status(errorUtils.Successful).send({ data: item });
     })
     .catch((err) => {
       console.error(err);

@@ -8,8 +8,6 @@ const indexRouter = require("./routes/index");
 
 const { createUser, login } = require("./controllers/users");
 
-const auth = require('./middlewares/auth');
-
 const { PORT = 3001 } = process.env;
 
 const app = express();
@@ -23,14 +21,10 @@ mongoose
   .then(() => console.log("connected to DB"))
   .catch((err) => console.error(err));
 
+app.post("/signin", login);
+app.post("/signup", createUser);
 
-app.post('/signin',  login);
-app.post('/signup', createUser);
-
-app.use(auth);
-app.use("/",  indexRouter);
-
-
+app.use("/", indexRouter);
 
 app.listen(PORT, () => {
   console.log(`app running on port ${PORT}`);

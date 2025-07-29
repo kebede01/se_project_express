@@ -8,19 +8,6 @@ const errorUtils = require("../utils/errors");
 
 const config = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => {
-      res.status(200).send({ data: users });
-    })
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(errorUtils.InternalServerError)
-        .send({ message: "An internal server error occurred" });
-    });
-};
-
 const getCurrentUser = (req, res) => {
   // const { userId } = req.params;
   const userId = req.user._id;
@@ -28,7 +15,7 @@ const getCurrentUser = (req, res) => {
   User.findById(userId)
     .orFail()
     .then((user) => {
-      res.status(200).send({ data: user });
+      res.status(errorUtils.Successful).send({ data: user });
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
@@ -63,7 +50,7 @@ const createUser = (req, res) => {
         const userObject = user.toObject();
         delete userObject.password;
 
-        res.status(201).send({
+        res.status(errorUtils.SuccessfulOperation).send({
           data: userObject,
         });
       })
@@ -77,7 +64,9 @@ const createUser = (req, res) => {
       }
       if (err.code === 11000) {
         // Duplicate key error — typically for unique fields like email
-        return res.status(409).json({ message: "Email already exists." });
+        return res
+          .status(errorUtils.EmailAlreadyExists)
+          .json({ message: "Email already exists." });
       }
       // Handle other errors
       return res
@@ -100,31 +89,43 @@ const updateProfile = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(errorUtils.DocumentNotFoundError)
+          .json({ message: "User not found" });
       }
       return res.json(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).json({ message: "Validation error" });
+        return res
+          .status(errorUtils.BadRequestStatus)
+          .json({ message: "Validation error" });
       }
-      return res.status(500).json({ message: "Server error" });
+      return res
+        .status(errorUtils.InternalServerError)
+        .json({ message: "Server error" });
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res
+      .status(errorUtils.BadRequestStatus)
+      .send({ message: "The password and email fields are required" });
+  }
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      res.status(200).send({
+      res.status(errorUtils.Successful).send({
         token: jwt.sign({ _id: user._id }, config.JWT_SECRET, {
           expiresIn: "7d",
         }),
       });
     })
     .catch((err) => {
-      res.status(400).send({ message: err.message });
+      res.status(errorUtils.BadRequestStatus).send({ message: err.message });
     });
 };
-module.exports = { updateProfile, getUsers, getCurrentUser, createUser, login };
+module.exports = { updateProfile, getCurrentUser, createUser, login };
