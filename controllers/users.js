@@ -9,7 +9,6 @@ const errorUtils = require("../utils/errors");
 const config = require("../utils/config");
 
 const getCurrentUser = (req, res) => {
-  // const { userId } = req.params;
   const userId = req.user._id;
 
   User.findById(userId)
@@ -112,7 +111,7 @@ const login = (req, res) => {
 
   if (!email || !password) {
     return res
-      .status(errorUtils.BadRequestStatus)
+      .status(errorUtils.BadRequest)
       .send({ message: "The password and email fields are required" });
   }
 
