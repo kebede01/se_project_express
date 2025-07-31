@@ -10,7 +10,7 @@ This project focuses on creating a server for the WTWR application.
 
 - This project is about building the structural framework for
   an API and user authorization.
-
+- Routes are protected by authorization
 ## Technologies Used
 
 - React
