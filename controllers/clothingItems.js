@@ -19,38 +19,35 @@ const getClothingItems = (req, res) => {
 
 const getClothingItem = (req, res) => {
   const { itemId } = req.params;
-  return (
-    ClothingItem.findById(itemId)
-      .orFail()
-      .then((item) => {
-        res.status(errorUtils.Successful).send({ data: item });
-      })
-      .catch((err) => {
-        console.error(err);
+  return ClothingItem.findById(itemId)
+    .orFail()
+    .then((item) => {
+      res.status(errorUtils.Successful).send({ data: item });
+    })
+    .catch((err) => {
+      console.error(err);
 
-        if (err.name === "DocumentNotFoundError") {
-          return res
-            .status(errorUtils.DocumentNotFoundError)
-            .send({ message: "The requested resource was not found" });
-        }
-
-        if (err.name === "CastError") {
-          return res
-            .status(errorUtils.BadRequestStatus)
-            .send({ message: "Invalid item ID" });
-        }
-
+      if (err.name === "DocumentNotFoundError") {
         return res
-          .status(errorUtils.InternalServerError)
-          .send({ message: "An internal server error occurred" });
-      })
-  );
+          .status(errorUtils.DocumentNotFoundError)
+          .send({ message: "The requested resource was not found" });
+      }
+
+      if (err.name === "CastError") {
+        return res
+          .status(errorUtils.BadRequestStatus)
+          .send({ message: "Invalid item ID" });
+      }
+
+      return res
+        .status(errorUtils.InternalServerError)
+        .send({ message: "An internal server error occurred" });
+    });
 };
 
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
-    .orFail()
     .then((item) => {
       res.status(errorUtils.SuccessfulOperation).send({ data: item });
     })
