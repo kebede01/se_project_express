@@ -4,6 +4,7 @@ const errorUtils = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
+    .orFail()
     .then((items) => {
       res.status(errorUtils.Successful).send({ data: items });
     })
@@ -58,7 +59,7 @@ const createClothingItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(errorUtils.BadRequestStatus)
-          .send({ message: "Check the values you provided for each field!" });
+          .send({ message: "Invalid name !" });
       }
       return res
         .status(errorUtils.InternalServerError)
@@ -102,7 +103,7 @@ const deleteClothingItem = (req, res) => {
           });
       }
       return res
-        .status(errorUtils.NotAuthorized)
+        .status(errorUtils.Forbidden)
         .send({ message: "The user isn't authorized to delete this item" });
     })
     .catch((err) => {
