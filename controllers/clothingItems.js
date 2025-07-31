@@ -20,7 +20,7 @@ const getClothingItem = (req, res) => {
   const { itemId } = req.params;
   return (
     ClothingItem.findById(itemId)
-      // .orFail()
+      .orFail()
       .then((item) => {
         res.status(errorUtils.Successful).send({ data: item });
       })
@@ -49,6 +49,7 @@ const getClothingItem = (req, res) => {
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+    .orFail()
     .then((item) => {
       res.status(errorUtils.SuccessfulOperation).send({ data: item });
     })

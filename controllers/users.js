@@ -6,7 +6,7 @@ const User = require("../models/user");
 
 const errorUtils = require("../utils/errors");
 
-const config = require("../utils/config");
+const JWT_SECRET = require("../utils/config");
 
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
@@ -111,14 +111,14 @@ const login = (req, res) => {
 
   if (!email || !password) {
     return res
-      .status(errorUtils.BadRequest)
+      .status(errorUtils.BadRequestStatus)
       .send({ message: "The password and email fields are required" });
   }
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.status(errorUtils.Successful).send({
-        token: jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         }),
       });
