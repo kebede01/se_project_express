@@ -124,7 +124,9 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(errorUtils.BadRequestStatus).send({ message: err.message });
+      if (err.message.includes("Incorrect email or password")) {
+        res.status(errorUtils.UnAuthorized).send({ message: err.message });
+      }
     });
 };
 module.exports = { updateProfile, getCurrentUser, createUser, login };
