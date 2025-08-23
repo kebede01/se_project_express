@@ -8,6 +8,12 @@ const errorUtils = require("../utils/errors");
 
 const JWT_SECRET = require("../utils/config");
 
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
+const ForbiddenError = require('../errors/forbidden-err');
+const ConflictError  = require('../errors/conflict-err');
+
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
@@ -81,6 +87,7 @@ const updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     userId,
     { name, avatar },
+    { name },
     {
       new: true, // Return the updated document
       runValidators: true, // Run schema validation on update
