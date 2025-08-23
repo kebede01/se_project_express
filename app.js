@@ -4,6 +4,9 @@ const cors = require("cors");
 
 const mongoose = require("mongoose");
 
+const { errors } = require("celebrate");
+
+const { validateUserSignUp, validateUserSignIn } = require("./middlewares/validation");
 const indexRouter = require("./routes/index");
 
 const { createUser, login } = require("./controllers/users");
@@ -22,11 +25,14 @@ mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => console.log("connected to DB"))
   .catch((err) => console.error(err));
-
-app.post("/signin", login);
-app.post("/signup", createUser);
+// celebrate error handler included as middleware
+app.post("/signin", validateUserSignIn, login);
+app.post("/signup", validateUserSignUp, createUser);
 
 app.use("/", indexRouter);
+// celebrate error handler
+app.use(errors());
+// our centralized handler
 app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`app running on port ${PORT}`);

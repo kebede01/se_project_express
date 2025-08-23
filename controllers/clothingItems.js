@@ -6,7 +6,7 @@ const NotFoundError = require("../errors/not-found-err");
 const BadRequestError = require("../errors/bad-request-err");
 const UnauthorizedError = require("../errors/unauthorized-err");
 const ForbiddenError = require("../errors/forbidden-err");
-const ConflictError = require("../errors/conflict-err");
+// const ConflictError = require("../errors/conflict-err");
 
 const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
@@ -16,7 +16,7 @@ const getClothingItems = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("The requested source was not found");
+        return next(new NotFoundError("The requested source was not found"));
       }
       return next(err);
     });
@@ -31,31 +31,35 @@ const getClothingItem = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("Items not found");
-      } else if (err.name === "CastError") {
-        throw new BadRequestError("Invalid item id");
-      } else {
-        return next(err);
+        return next(new NotFoundError("Items not found"))
       }
-    });
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item id"));
+      }
+        return next(err);
+      });
 };
 
 const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
+
       res.status(errorUtils.SuccessfulOperation).send({ data: item });
     })
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("Some bad data entered");
+      if (err.name === "ValidatorError") {
+        return next(new BadRequestError("Validatio error"));
       }
-      if (err.name === "CastError") {
-        throw new BadRequestError("The id string is in an invalid format");
-      } else {
-        return next(err);
+       if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Some bad data entered"))
       }
-    });
+       if (err.name === "CastError") {
+         return next(new BadRequestError("The id string is in an invalid format"));
+      }
+
+    return next(err);
+ });
 };
 
 const deleteClothingItem = (req, res, next) => {
@@ -75,23 +79,21 @@ const deleteClothingItem = (req, res, next) => {
           })
           .catch((err) => {
             if (err.name === "DocumentNotFoundError") {
-              throw new UnauthorizedError(
-                "The user isn't authorized to delete this item"
-              );
+              return next(new UnauthorizedError("The user isn't authorized to delete this item"));
             }
             return next(err);
           });
       }
 
-      throw new ForbiddenError("The user is not authorized to delete");
+      return next(new ForbiddenError("The user is not authorized to delete"));
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("The requested source was not found");
+        return next(new NotFoundError("The requested source was not found"));
       }
 
       if (err.name === "CastError") {
-        throw new BadRequestError("Invalid id format entered");
+        return next(new BadRequestError("Invalid id format entered"));
       }
 
       return next(err);
@@ -109,9 +111,10 @@ const likeItem = (req, res, next) => {
     .then((like) => res.status(errorUtils.Successful).send({ data: like }))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("The requested source was not found");
-      } else if (err.name === "CastError") {
-        throw new BadRequestError("Invalid id format entered");
+        return next(new NotFoundError("The requested source was not found"));
+      }
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid id format entered"));
       }
 
       return next(err);
@@ -130,9 +133,10 @@ const dislikeItem = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("The requested source was not found");
-      } else if (err.name === "CastError") {
-        throw new BadRequestError("Invalid id format entered");
+        return next(new NotFoundError("The requested source was not found"));
+      }
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid id format entered"));
       }
       return next(err);
     });

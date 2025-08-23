@@ -8,13 +8,13 @@ const errorUtils = require("../utils/errors");
 
 const JWT_SECRET = require("../utils/config");
 
-const NotFoundError = require('../errors/not-found-err');
-const BadRequestError = require('../errors/bad-request-err');
-const UnauthorizedError = require('../errors/unauthorized-err');
-const ForbiddenError = require('../errors/forbidden-err');
-const ConflictError  = require('../errors/conflict-err');
+const NotFoundError = require("../errors/not-found-err");
+const BadRequestError = require("../errors/bad-request-err");
+// const UnauthorizedError = require("../errors/unauthorized-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const ConflictError = require("../errors/conflict-err");
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
@@ -24,24 +24,20 @@ const getCurrentUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(errorUtils.DocumentNotFoundError)
-          .send({ message: "The requested resource was not found" });
+        throw new NotFoundError("User not found");
+      } else if (err.name === "CastError") {
+        throw new BadRequestError("Invalid user id");
       }
-      if (err.name === "CastError") {
-        return res
-          .status(errorUtils.BadRequestStatus)
-          .send({ message: "Invalid item ID" });
-      }
-
-      return res
-        .status(errorUtils.InternalServerError)
-        .send({ message: "An internal server error occurred" });
+      return next(err);
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
+  if (!email || !password) {
+    return next(new BadRequestError("Email and password are required"));
+  }
+
   bcrypt
     .hash(password, 10)
     .then((hash) =>
@@ -61,26 +57,22 @@ const createUser = (req, res) => {
       })
     )
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(errorUtils.BadRequestStatus)
-          .send({ message: "Check the values you provided for each field!" });
+        return next(
+          new BadRequestError("Check the values you provided for each field!")
+        );
       }
       if (err.code === 11000) {
         // Duplicate key error — typically for unique fields like email
-        return res
-          .status(errorUtils.EmailAlreadyExists)
-          .json({ message: "Email already exists." });
+        return next(new ConflictError("Email already exists."));
       }
       // Handle other errors
-      return res
-        .status(errorUtils.InternalServerError)
-        .send({ message: "An internal server error occurred" });
+
+      return next(err);
     });
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const userId = req.user._id; // Get user ID from auth middleware
   const { name, avatar } = req.body; // Only allow these fields to be updated
 
@@ -94,32 +86,26 @@ const updateProfile = (req, res) => {
     }
   )
     .then((user) => {
-      if (!user) {
-        return res
-          .status(errorUtils.DocumentNotFoundError)
-          .json({ message: "User not found" });
-      }
-      return res.json(user);
+      res.status(errorUtils.Successful).send({
+        data: user
+      });
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res
-          .status(errorUtils.BadRequestStatus)
-          .json({ message: "Validation error" });
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("The requested user was not found"));
       }
-      return res
-        .status(errorUtils.InternalServerError)
-        .json({ message: "Server error" });
+      if (err.name === " ValidationError") {
+        return next(new BadRequestError("There is entry values validation error!"));
+      }
+      return next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(errorUtils.BadRequestStatus)
-      .send({ message: "The password and email fields are required" });
+    return next(new BadRequestError("Email and password are required!"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -132,8 +118,12 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message.includes("Incorrect email or password")) {
-        res.status(errorUtils.UnAuthorized).send({ message: err.message });
+        return next(new ForbiddenError("The user isn't authorized to login!"));
       }
+      if (err.name === " ValidationError") {
+        return next(new BadRequestError("Check the values you provided for each field!"));
+      }
+      return next(err);
     });
 };
 module.exports = { updateProfile, getCurrentUser, createUser, login };
