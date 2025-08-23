@@ -8,7 +8,7 @@ const { errors } = require("celebrate");
 
 const { validateUserSignUp, validateUserSignIn } = require("./middlewares/validation");
 const indexRouter = require("./routes/index");
-
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const { createUser, login } = require("./controllers/users");
 
 const errorHandler = require('./middlewares/error-handler');
@@ -25,11 +25,14 @@ mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => console.log("connected to DB"))
   .catch((err) => console.error(err));
+
+app.use(requestLogger);
 // celebrate error handler included as middleware
 app.post("/signin", validateUserSignIn, login);
 app.post("/signup", validateUserSignUp, createUser);
 
 app.use("/", indexRouter);
+app.use(errorLogger);
 // celebrate error handler
 app.use(errors());
 // our centralized handler
