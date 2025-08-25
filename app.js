@@ -5,6 +5,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const { errors } = require("celebrate");
+// reads environmental variables into our app
+require('dotenv').config();
 
 const { validateUserSignUp, validateUserSignIn } = require("./middlewares/validation");
 const indexRouter = require("./routes/index");
