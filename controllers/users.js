@@ -20,13 +20,14 @@ const getCurrentUser = (req, res, next) => {
   User.findById(userId)
     .orFail()
     .then((user) => {
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
       res.status(errorUtils.Successful).send({ data: user });
     })
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        throw new NotFoundError("User not found");
-      } else if (err.name === "CastError") {
-        throw new BadRequestError("Invalid user id");
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid user id format"));
       }
       return next(err);
     });
@@ -35,7 +36,7 @@ const getCurrentUser = (req, res, next) => {
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   if (!email || !password) {
-    return next(new BadRequestError("Email and password are required"));
+    throw new BadRequestError("Email and password are required");
   }
 
   bcrypt
@@ -86,8 +87,11 @@ const updateProfile = (req, res, next) => {
     }
   )
     .then((user) => {
+       if (!user) {
+        throw new NotFoundError("User not found");
+      }
       res.status(errorUtils.Successful).send({
-        data: user
+        data: user,
       });
     })
     .catch((err) => {
@@ -95,7 +99,9 @@ const updateProfile = (req, res, next) => {
         return next(new NotFoundError("The requested user was not found"));
       }
       if (err.name === " ValidationError") {
-        return next(new BadRequestError("There is entry values validation error!"));
+        return next(
+          new BadRequestError("There is entry values validation error!")
+        );
       }
       return next(err);
     });
@@ -110,6 +116,9 @@ const login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
+       if (!user) {
+        throw new NotFoundError("User not found");
+      }
       res.status(errorUtils.Successful).send({
         token: jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
@@ -121,7 +130,9 @@ const login = (req, res, next) => {
         return next(new ForbiddenError("The user isn't authorized to login!"));
       }
       if (err.name === " ValidationError") {
-        return next(new BadRequestError("Check the values you provided for each field!"));
+        return next(
+          new BadRequestError("Check the values you provided for each field!")
+        );
       }
       return next(err);
     });

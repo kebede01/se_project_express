@@ -12,6 +12,9 @@ const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .orFail()
     .then((items) => {
+       if (!items) {
+        throw new NotFoundError("There are no clothing items!");
+      }
       res.status(errorUtils.Successful).send({ data: items });
     })
     .catch((err) => {
@@ -27,14 +30,17 @@ const getClothingItem = (req, res, next) => {
   return ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
+       if (!item) {
+              throw new NotFoundError("Item not found");
+        }
       res.status(errorUtils.Successful).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("Items not found"))
+        return next(new NotFoundError("Item not found"))
       }
       if (err.name === "CastError") {
-        return next(new BadRequestError("Invalid item id"));
+        return next(new BadRequestError("Invalid item id format"));
       }
         return next(err);
       });
@@ -44,17 +50,16 @@ const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-
+      if (!item) {
+        throw new BadRequestError("Please! fill all the required inputs");
+         }
       res.status(errorUtils.SuccessfulOperation).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "ValidatorError") {
         return next(new BadRequestError("Validatio error"));
       }
-       if (err.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("Some bad data entered"))
-      }
-       if (err.name === "CastError") {
+     if (err.name === "CastError") {
          return next(new BadRequestError("The id string is in an invalid format"));
       }
 
@@ -63,13 +68,17 @@ const createClothingItem = (req, res, next) => {
 };
 
 const deleteClothingItem = (req, res, next) => {
+
   const userId = req.user._id; // the currently logged in user's id
   const { itemId } = req.params; // the id of the item which we are attempting to delete
   // we should only allow an item to be deleted if the current user's id is equal to the owner property of the item
   ClothingItem.findById(itemId)
     .orFail()
     .then((itemData) => {
-      if (userId.toString() === itemData.owner.toString()) {
+      if (!itemData) {
+        throw new NotFoundError("The requested source was not found");
+         }
+     else if (userId.toString() === itemData.owner.toString()) {
         return ClothingItem.findByIdAndDelete(itemId)
           .orFail()
           .then(() => {
@@ -108,7 +117,7 @@ const likeItem = (req, res, next) => {
     { new: true }
   )
     .orFail()
-    .then((like) => res.status(errorUtils.Successful).send({ data: like }))
+    .then((item) => res.status(errorUtils.Successful).send({ data: item }))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("The requested source was not found"));
