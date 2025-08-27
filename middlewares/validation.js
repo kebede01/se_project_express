@@ -86,7 +86,7 @@ module.exports.validateItemId = celebrate({
     itemId: Joi.string().required(),
   }),
 
-    headers: Joi.object()({
+    headers: Joi.object({
     authorization: Joi.string()
       .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
       .required(),

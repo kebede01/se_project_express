@@ -26,3 +26,9 @@ This project focuses on creating a server for the WTWR application.
 ### Testing
 
 - Testing each API with postman is done.
+
+### The project's domain name
+`wtwrkeb.jumpingcrab.com`
+
+### A link to the frontend github repo
+`https://github.com/kebede01/se_project_react`

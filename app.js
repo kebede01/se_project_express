@@ -23,12 +23,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
+app.use(cors({
+  origin: 'https://www.wtwrkeb.jumpingcrab.com', // allow your frontend origin
+  credentials: true // if you're using cookies or auth headers
+}));
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => console.log("connected to DB"))
   .catch((err) => console.error(err));
 
 app.use(requestLogger);
+// app.get('/crash-test', () => {
+//   setTimeout(() => {
+//     throw new Error('Server will crash now');
+//   }, 0);
+// });
 // celebrate error handler included as middleware
 app.post("/signin", validateUserSignIn, login);
 app.post("/signup", validateUserSignUp, createUser);
