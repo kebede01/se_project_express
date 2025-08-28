@@ -80,24 +80,24 @@ module.exports.validateCreateClothingInput = celebrate({
   }),
 });
 
-module.exports.validateItemId = celebrate({
-  body: Joi.object().keys({
-    itemId: Joi.string().required()
-  }),
+// module.exports.validateItemId = celebrate({
+//   body: Joi.object().keys({
+//     itemId: Joi.string().required()
+//   }),
 
 
-  headers: Joi.object({
-    authorization: Joi.string()
-      .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
-      .required(),
-  }).unknown(true),
+//   headers: Joi.object({
+//     authorization: Joi.string()
+//       .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
+//       .required(),
+//   }).unknown(true),
 
-  query: Joi.object().keys({
-    sort: Joi.string().valid("asc", "desc"),
-    page: Joi.number().integer().min(1),
-    limit: Joi.number().integer().min(1).max(100),
-  }),
-});
+//   query: Joi.object().keys({
+//     sort: Joi.string().valid("asc", "desc"),
+//     page: Joi.number().integer().min(1),
+//     limit: Joi.number().integer().min(1).max(100),
+//   }),
+// });
 
 
 module.exports.validateUserId = celebrate({
