@@ -81,24 +81,24 @@ module.exports.validateCreateClothingInput = celebrate({
 });
 
 module.exports.validateItemId = celebrate({
-   body: Joi.object().keys({
-      params: Joi.object().keys({
-    itemId: Joi.string().required(),
+  body: Joi.object().keys({
+    itemId: Joi.string().required()
   }),
 
-    headers: Joi.object({
+
+  headers: Joi.object({
     authorization: Joi.string()
       .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
       .required(),
   }).unknown(true),
 
-   query: Joi.object().keys({
+  query: Joi.object().keys({
     sort: Joi.string().valid("asc", "desc"),
     page: Joi.number().integer().min(1),
     limit: Joi.number().integer().min(1).max(100),
   }),
-   }),
 });
+
 
 module.exports.validateUserId = celebrate({
   // with userId validation fails. So, I commented it out
