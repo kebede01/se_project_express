@@ -60,7 +60,7 @@ module.exports.updateProfileInput = celebrate({
       "string.empty": 'The "imageUrl" field must be filled in',
       "string.uri": 'the "imageUrl" field must be a valid url',
     }),
-}),
+  }),
 });
 
 module.exports.validateCreateClothingInput = celebrate({
@@ -71,7 +71,7 @@ module.exports.validateCreateClothingInput = celebrate({
       "string.empty": 'The "name" field must be filled in',
     }),
 
-     weather: Joi.string().required(),
+    weather: Joi.string().required(),
 
     imageUrl: Joi.string().required().custom(validateURL).messages({
       "string.empty": 'The "imageUrl" field must be filled in',
@@ -80,41 +80,22 @@ module.exports.validateCreateClothingInput = celebrate({
   }),
 });
 
-// module.exports.validateItemId = celebrate({
-//   body: Joi.object().keys({
-//     itemId: Joi.string().required()
-//   }),
-
-
-//   headers: Joi.object({
-//     authorization: Joi.string()
-//       .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
-//       .required(),
-//   }).unknown(true),
-
-//   query: Joi.object().keys({
-//     sort: Joi.string().valid("asc", "desc"),
-//     page: Joi.number().integer().min(1),
-//     limit: Joi.number().integer().min(1).max(100),
-//   }),
-// });
-
-
-module.exports.validateUserId = celebrate({
-  // with userId validation fails. So, I commented it out
-  // params: Joi.object().keys({
-  //   userId: Joi.string().hex().length(24).required(),
-  // }),
+module.exports.validateItemId = celebrate({
+  params: Joi.object().keys({
+    itemId: Joi.string().hex().length(24).required(),
+  }),
 
   headers: Joi.object({
     authorization: Joi.string()
       .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
       .required(),
   }).unknown(true),
+});
 
-  query: Joi.object().keys({
-    sort: Joi.string().valid("asc", "desc"),
-    page: Joi.number().integer().min(1),
-    limit: Joi.number().integer().min(1).max(100),
-  }),
+module.exports.validateUserId = celebrate({
+  headers: Joi.object({
+    authorization: Joi.string()
+      .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/)
+      .required(),
+  }).unknown(true),
 });

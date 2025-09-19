@@ -1,21 +1,20 @@
 const ClothingItem = require("../models/clothingItem");
 
-const errorUtils = require("../utils/errors");
+const success = require("../utils/errors");
 
 const NotFoundError = require("../errors/not-found-err");
 const BadRequestError = require("../errors/bad-request-err");
 const UnauthorizedError = require("../errors/unauthorized-err");
 const ForbiddenError = require("../errors/forbidden-err");
-// const ConflictError = require("../errors/conflict-err");
 
 const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .orFail()
     .then((items) => {
-       if (!items) {
+      if (!items) {
         throw new NotFoundError("There are no clothing items!");
       }
-      res.status(errorUtils.Successful).send({ data: items });
+      res.status(success.Successful).send({ data: items });
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
@@ -30,20 +29,20 @@ const getClothingItem = (req, res, next) => {
   return ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-       if (!item) {
-              throw new NotFoundError("Item not found");
-        }
-      res.status(errorUtils.Successful).send({ data: item });
+      if (!item) {
+        throw new NotFoundError("Item not found");
+      }
+      res.status(success.Successful).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("Item not found"))
+        return next(new NotFoundError("Item not found"));
       }
       if (err.name === "CastError") {
         return next(new BadRequestError("Invalid item id format"));
       }
-        return next(err);
-      });
+      return next(err);
+    });
 };
 
 const createClothingItem = (req, res, next) => {
@@ -52,23 +51,24 @@ const createClothingItem = (req, res, next) => {
     .then((item) => {
       if (!item) {
         throw new BadRequestError("Please! fill all the required inputs");
-         }
-      res.status(errorUtils.SuccessfulOperation).send({ data: item });
+      }
+      res.status(success.SuccessfulOperation).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "ValidatorError") {
         return next(new BadRequestError("Validatio error"));
       }
-     if (err.name === "CastError") {
-         return next(new BadRequestError("The id string is in an invalid format"));
+      if (err.name === "CastError") {
+        return next(
+          new BadRequestError("The id string is in an invalid format")
+        );
       }
 
-    return next(err);
- });
+      return next(err);
+    });
 };
 
 const deleteClothingItem = (req, res, next) => {
-
   const userId = req.user._id; // the currently logged in user's id
   const { itemId } = req.params; // the id of the item which we are attempting to delete
   // we should only allow an item to be deleted if the current user's id is equal to the owner property of the item
@@ -77,18 +77,21 @@ const deleteClothingItem = (req, res, next) => {
     .then((itemData) => {
       if (!itemData) {
         throw new NotFoundError("The requested source was not found");
-         }
-     else if (userId.toString() === itemData.owner.toString()) {
+      } else if (userId.toString() === itemData.owner.toString()) {
         return ClothingItem.findByIdAndDelete(itemId)
           .orFail()
           .then(() => {
             res
-              .status(errorUtils.Successful)
+              .status(success.Successful)
               .send({ data: "Item deleted successfully" });
           })
           .catch((err) => {
             if (err.name === "DocumentNotFoundError") {
-              return next(new UnauthorizedError("The user isn't authorized to delete this item"));
+              return next(
+                new UnauthorizedError(
+                  "The user isn't authorized to delete this item"
+                )
+              );
             }
             return next(err);
           });
@@ -117,7 +120,7 @@ const likeItem = (req, res, next) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(errorUtils.Successful).send({ data: item }))
+    .then((item) => res.status(success.Successful).send({ data: item }))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("The requested source was not found"));
@@ -138,7 +141,7 @@ const dislikeItem = (req, res, next) => {
   )
     .orFail()
     .then((item) => {
-      res.status(errorUtils.Successful).send({ data: item });
+      res.status(success.Successful).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {

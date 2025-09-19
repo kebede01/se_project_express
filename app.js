@@ -32,11 +32,11 @@ mongoose
   .catch((err) => console.error(err));
 
 app.use(requestLogger);
-// app.get('/crash-test', () => {
-//   setTimeout(() => {
-//     throw new Error('Server will crash now');
-//   }, 0);
-// });
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Server will crash now');
+  }, 0);
+});
 // celebrate error handler included as middleware
 app.post("/signin", validateUserSignIn, login);
 app.post("/signup", validateUserSignUp, createUser);

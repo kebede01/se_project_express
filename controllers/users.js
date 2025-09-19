@@ -87,7 +87,7 @@ const updateProfile = (req, res, next) => {
     }
   )
     .then((user) => {
-       if (!user) {
+      if (!user) {
         throw new NotFoundError("User not found");
       }
       res.status(errorUtils.Successful).send({
@@ -116,7 +116,7 @@ const login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-       if (!user) {
+      if (!user) {
         throw new NotFoundError("User not found");
       }
       res.status(errorUtils.Successful).send({
