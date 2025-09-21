@@ -8,15 +8,16 @@ This project focuses on creating a server for the WTWR application.
 
 ## About
 
-- This project is about building the structural framework for
-  an API and user authorization.
-- Routes are protected by authorization
+- This project is about building an app to choose what to wear for different
+weather conditions and with a like or dislike option button included.
 
 ## Technologies Used
 
 - React
+- Express
+- Celebrate and Validator
 - MongoDB
-- Postman
+- Postman for testing purpose
 
 ## Running the Project
 
@@ -37,5 +38,6 @@ This project focuses on creating a server for the WTWR application.
 ### A link to the frontend github repo
 
 `https://github.com/kebede01/se_project_react`
+`https://github.com/kebede01/se_project_express`
 
 
