@@ -16,7 +16,7 @@ const ConflictError = require("../errors/conflict-err");
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
-
+//  const { id } = req.params;
   User.findById(userId)
     .orFail()
     .then((user) => {
@@ -80,8 +80,7 @@ const updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(
     userId,
     { name, avatar },
-    { name },
-    {
+   {
       new: true, // Return the updated document
       runValidators: true, // Run schema validation on update
     }

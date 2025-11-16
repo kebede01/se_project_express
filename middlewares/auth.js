@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    // return handleAuthError(res);
+   
    return handleAuthError(next);
   }
 
